@@ -13,4 +13,6 @@ module org.example.restaurantmangement {
 
     opens org.example.restaurantmangement to javafx.fxml;
     exports org.example.restaurantmangement;
+    exports org.example.restaurantmangement.Controller;
+    opens org.example.restaurantmangement.Controller to javafx.fxml;
 }

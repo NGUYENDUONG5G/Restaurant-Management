@@ -1,4 +1,4 @@
-package org.example.restaurantmangement;
+package org.example.restaurantmangement.Controller;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
