@@ -1,22 +1,23 @@
 package org.example.restaurantmangement.Model;
 
-import java.util.Date;
+import javafx.scene.image.Image;
+
+import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 
 public class Food {
     private String name;
     private String id;
     private String type;
-    private String size;
-    private static String[] sizes = {"M", "L"};
+    private byte[] image;
     private HashMap<String, Double> price;
 
-    public Food(String name, String id, String type, String size) {
+    public Food(String id, String name, String type, byte[] image) {
         this.name = name;
         this.id = id;
         this.type = type;
-        this.size = size;
-
+        this.image = image;
+        this.price = new HashMap<>();
     }
 
     public String getType() {
@@ -55,6 +56,19 @@ public class Food {
         return result.toString();
     }
 
+    public byte[] getImage() {
+        return image;
+    }
+
+    public Image displayImage() {
+        ByteArrayInputStream bis = new ByteArrayInputStream(image);
+        return new Image(bis);
+    }
+
+    public void setImage(byte[] image) {
+        this.image = image;
+    }
+
     public String getId() {
         return id;
     }
@@ -63,16 +77,19 @@ public class Food {
         this.id = id.toUpperCase();
     }
 
-    public String getSize() {
-        return size;
-    }
-
-    public void setSize(String size) {
-        this.size = size.toUpperCase();
+    public void setSize(String oldSize, String newSize) {
+        price.put(newSize, price.get(oldSize));
+        price.remove(oldSize);
     }
 
     public double getPrice(String size) {
         return this.price.get(size);
+    }
+
+    public void setPrice(HashMap<String, Double> prices) {
+        if (prices != null) {
+            this.price = prices;
+        }
     }
 
     public void setPrice(String size, double price) {

@@ -10,6 +10,8 @@ module org.example.restaurantmangement {
     requires org.kordamp.bootstrapfx.core;
     requires eu.hansolo.tilesfx;
     requires com.almasb.fxgl.all;
+    requires java.sql;
+    requires java.management;
 
     opens org.example.restaurantmangement to javafx.fxml;
     exports org.example.restaurantmangement;
