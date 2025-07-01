@@ -3,6 +3,7 @@ package org.example.restaurantmangement.Model;
 import javafx.scene.image.Image;
 
 import java.io.ByteArrayInputStream;
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class Food {
@@ -94,5 +95,16 @@ public class Food {
 
     public void setPrice(String size, double price) {
         this.price.put(size, price);
+    }
+
+    @Override
+    public String toString() {
+        return "Food{" +
+                "name='" + name + '\'' +
+                ", id='" + id + '\'' +
+                ", type='" + type + '\'' +
+                ", image=" + Arrays.toString(image) +
+                ", price=" + price +
+                '}';
     }
 }

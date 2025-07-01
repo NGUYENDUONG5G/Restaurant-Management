@@ -10,18 +10,19 @@ import java.io.IOException;
 import java.lang.management.MemoryUsage;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 
 public class Menu {
 
+
     private Stage stage;
-    private static Connection connection;
     public static PreparedStatement insertMenu, insertPrice, selectMenu, selectPrice, updateName,
             updateType, updateSize, updatePrice, updateImage, delete;
     private static final String insertQueryMenu = "INSERT INTO menu (id, name, type, image) VALUES(?, ?, ?, ?)";
     private static final String insertQueryPrice = "INSERT INTO price_of_size (id, size, price) VALUES (?, ?, ?)";
-    private static final String selectQueryMenu = "SELECT * FROM menu WHERE id = ?";
+    private static final String selectQueryMenu = "SELECT * FROM menu";
     private static final String selectQueryPrice = "SELECT size, price FROM price_of_size WHERE id = ?";
     private static final String updateNameQuery = "UPDATE menu SET name = ? WHERE id = ?";
     private static final String updateTypeQuery = "UPDATE menu SET type = ? WHERE id = ?";
@@ -29,11 +30,11 @@ public class Menu {
     private static final String updatePriceQuery = "UPDATE price_of_size SET price = ? WHERE id = ? AND size = ? ";
     private static final String updateImageQuery = "UPDATE menu SET image = ? WHERE id = ?";
     private static final String deleteQueryMenu = "DELETE FROM menu WHERE id = ?";
-
+    private static final HashMap<String, Food> foods = new HashMap<>();
 
     static {
         try {
-            connection = ConnectionDB.getConnection();
+            Connection connection = ConnectionDB.getConnection();
             insertMenu = connection.prepareStatement(insertQueryMenu);
             insertPrice = connection.prepareStatement(insertQueryPrice);
             selectMenu = connection.prepareStatement(selectQueryMenu);
@@ -44,6 +45,7 @@ public class Menu {
             updatePrice = connection.prepareStatement(updatePriceQuery);
             updateImage = connection.prepareStatement(updateImageQuery);
             delete = connection.prepareStatement(deleteQueryMenu);
+            setSelectMenu();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -54,9 +56,10 @@ public class Menu {
         this.stage = stage;
     }
 
-    public void insert(String id, String name, String type, HashMap<String, Double> prices) {
-
-
+    public void setInsert(String id, String name, String type, HashMap<String, Double> prices) {
+        if (foods.containsKey(id)) {
+            return;
+        }
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Choose image");
         fileChooser.getExtensionFilters().addAll(
@@ -80,12 +83,13 @@ public class Menu {
                     insertPrice.setString(2, size_);
                     insertPrice.setString(3, String.valueOf(prices.get(size_)));
                     insertPrice.executeUpdate();
+
                 }
-                insertPrice.close();
-                insertMenu.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (SQLException e) {
+                Food food = new Food(id, name, type, byteImage);
+                food.setPrice(prices);
+                foods.put(id, food);
+
+            } catch (IOException | SQLException e) {
                 e.printStackTrace();
             }
         }
@@ -97,7 +101,8 @@ public class Menu {
             updateName.setString(1, newName);
             updateName.setString(2, id);
             updateName.executeUpdate();
-            updateName.close();
+
+            foods.get(id).setName(newName);
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -110,7 +115,7 @@ public class Menu {
             updateType.setString(1, type);
             updateType.setString(2, id);
             updateType.executeUpdate();
-            updateType.close();
+            foods.get(id).setType(type);
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -133,7 +138,7 @@ public class Menu {
                 updateImage.setBinaryStream(1, fis, fis.available());
                 updateImage.setString(2, id);
                 updateImage.executeUpdate();
-                updatePrice.close();
+                foods.get(id).setImage(bytes);
 
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -151,7 +156,7 @@ public class Menu {
             updateSize.setString(2, id);
             updateSize.setString(3, oldSize);
             updateSize.executeUpdate();
-            updateSize.close();
+            foods.get(id).setSize(oldSize, newSize);
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -165,7 +170,7 @@ public class Menu {
             updatePrice.setString(2, id);
             updatePrice.setString(3, size);
             updatePrice.executeUpdate();
-            updatePrice.close();
+            foods.get(id).setPrice(size, Double.parseDouble(price));
 
 
         } catch (SQLException e) {
@@ -174,4 +179,40 @@ public class Menu {
 
     }
 
+    public static void setSelectMenu() {
+        try (ResultSet resultSet = selectMenu.executeQuery()) {
+            while (resultSet.next()) {
+
+                String id = resultSet.getString("id");
+                String name = resultSet.getString("name");
+                String type = resultSet.getString("type");
+                byte[] bytes = resultSet.getBytes("image");
+
+                selectPrice.setString(1, id);
+                ResultSet resultSet1 = selectPrice.executeQuery();
+                Food food = new Food(id, name, type, bytes);
+                while (resultSet1.next()) {
+                    String size = resultSet1.getString("size");
+                    Double price = resultSet1.getDouble("price");
+                    food.setPrice(size, price);
+                }
+                foods.put(id, food);
+                for (Food food_ : foods.values()) {
+                    System.out.println(food_.toString());
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void setDelete(String id) {
+        try {
+            delete.setString(1, id);
+            delete.executeUpdate();
+            foods.remove(id);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 }
