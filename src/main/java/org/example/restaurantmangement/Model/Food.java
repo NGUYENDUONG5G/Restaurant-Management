@@ -11,7 +11,7 @@ public class Food {
     private String id;
     private String type;
     private byte[] image;
-    private HashMap<String, Double> price;
+    private HashMap<String, Long> price;
 
     public Food(String id, String name, String type, byte[] image) {
         this.name = name;
@@ -87,13 +87,17 @@ public class Food {
         return this.price.get(size);
     }
 
-    public void setPrice(HashMap<String, Double> prices) {
+    public HashMap<String, Long> getPrice() {
+        return price;
+    }
+
+    public void setPrice(HashMap<String, Long> prices) {
         if (prices != null) {
             this.price = prices;
         }
     }
 
-    public void setPrice(String size, double price) {
+    public void setPrice(String size, long price) {
         this.price.put(size, price);
     }
 

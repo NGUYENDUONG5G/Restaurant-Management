@@ -13,11 +13,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.Locale;
 
 public class Menu {
 
 
-    private Stage stage;
+    private static Stage stage;
     public static PreparedStatement insertMenu, insertPrice, selectMenu, selectPrice, updateName,
             updateType, updateSize, updatePrice, updateImage, delete;
     private static final String insertQueryMenu = "INSERT INTO menu (id, name, type, image) VALUES(?, ?, ?, ?)";
@@ -51,12 +52,15 @@ public class Menu {
         }
     }
 
-
-    public void setStage(Stage stage) {
-        this.stage = stage;
+    public static HashMap<String, Food> getFoods() {
+        return foods;
     }
 
-    public void setInsert(String id, String name, String type, HashMap<String, Double> prices) {
+    public static void setStage(Stage stage) {
+        Menu.stage = stage;
+    }
+
+    public void setInsert(String id, String name, String type, HashMap<String, Long> prices) {
         if (foods.containsKey(id)) {
             return;
         }
@@ -170,7 +174,7 @@ public class Menu {
             updatePrice.setString(2, id);
             updatePrice.setString(3, size);
             updatePrice.executeUpdate();
-            foods.get(id).setPrice(size, Double.parseDouble(price));
+            foods.get(id).setPrice(size, Long.parseLong(price));
 
 
         } catch (SQLException e) {
@@ -193,7 +197,7 @@ public class Menu {
                 Food food = new Food(id, name, type, bytes);
                 while (resultSet1.next()) {
                     String size = resultSet1.getString("size");
-                    Double price = resultSet1.getDouble("price");
+                    long price = resultSet1.getLong("price");
                     food.setPrice(size, price);
                 }
                 foods.put(id, food);
