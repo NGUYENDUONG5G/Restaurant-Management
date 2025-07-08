@@ -3,17 +3,11 @@ package org.example.restaurantmangement.Model;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.lang.management.MemoryUsage;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.io.*;
+import java.nio.file.Files;
+import java.sql.*;
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Locale;
 
 public class Menu {
 
@@ -60,7 +54,7 @@ public class Menu {
         Menu.stage = stage;
     }
 
-    public void setInsert(String id, String name, String type, HashMap<String, Long> prices) {
+    public static void setInsert(String id, String name, String type, HashMap<String, Long> prices) {
         if (foods.containsKey(id)) {
             return;
         }
@@ -73,13 +67,16 @@ public class Menu {
         byte[] byteImage;
         if (selectedFile != null) {
             try (FileInputStream fis = new FileInputStream(selectedFile)) {
-                byteImage = new byte[(int) selectedFile.length()];
-                fis.read(byteImage);
+                byteImage = Files.readAllBytes(selectedFile.toPath());
+                ByteArrayInputStream bais = new ByteArrayInputStream(byteImage);
+                Food food = new Food(id, name, type, byteImage);
+                food.setPrice(prices);
+                foods.put(id, food);
 
-                insertMenu.setString(1, id);
-                insertMenu.setString(2, name);
-                insertMenu.setString(3, type);
-                insertMenu.setBinaryStream(4, fis, fis.available());
+                insertMenu.setString(1, food.getId());
+                insertMenu.setString(2, food.getName());
+                insertMenu.setString(3, food.getType());
+                insertMenu.setBinaryStream(4, fis, byteImage.length);
                 insertMenu.executeUpdate();
 
                 for (String size_ : prices.keySet()) {
@@ -89,9 +86,7 @@ public class Menu {
                     insertPrice.executeUpdate();
 
                 }
-                Food food = new Food(id, name, type, byteImage);
-                food.setPrice(prices);
-                foods.put(id, food);
+
 
             } catch (IOException | SQLException e) {
                 e.printStackTrace();
@@ -100,13 +95,13 @@ public class Menu {
 
     }
 
-    public void setUpdateName(String id, String newName) {
+    public static void setUpdateName(String id, String newName) {
         try {
-            updateName.setString(1, newName);
+            foods.get(id).setName(newName);
+            updateName.setString(1, foods.get(id).getName());
             updateName.setString(2, id);
             updateName.executeUpdate();
 
-            foods.get(id).setName(newName);
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -114,12 +109,13 @@ public class Menu {
 
     }
 
-    public void setUpdateType(String id, String type) {
+    public static void setUpdateType(String id, String type) {
         try {
-            updateType.setString(1, type);
+            foods.get(id).setType(type);
+            updateType.setString(1, foods.get(id).getType());
             updateType.setString(2, id);
             updateType.executeUpdate();
-            foods.get(id).setType(type);
+
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -127,7 +123,7 @@ public class Menu {
 
     }
 
-    public void setUpdateImage(String id) {
+    public static void setUpdateImage(String id) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Choose image");
         fileChooser.getExtensionFilters().addAll(
@@ -154,8 +150,9 @@ public class Menu {
         }
     }
 
-    public void setUpdateSize(String id, String oldSize, String newSize) {
+    public static void setUpdateSize(String id, String oldSize, String newSize) {
         try {
+
             updateSize.setString(1, newSize);
             updateSize.setString(2, id);
             updateSize.setString(3, oldSize);
@@ -168,7 +165,7 @@ public class Menu {
 
     }
 
-    public void setUpdatePrice(String id, String size, String price) {
+    public static void setUpdatePrice(String id, String size, String price) {
         try {
             updatePrice.setString(1, price);
             updatePrice.setString(2, id);
@@ -190,7 +187,9 @@ public class Menu {
                 String id = resultSet.getString("id");
                 String name = resultSet.getString("name");
                 String type = resultSet.getString("type");
-                byte[] bytes = resultSet.getBytes("image");
+                Blob blob = resultSet.getBlob("image");
+                byte[] bytes = blob.getBytes(1, (int) blob.length());
+
 
                 selectPrice.setString(1, id);
                 ResultSet resultSet1 = selectPrice.executeQuery();
@@ -210,7 +209,7 @@ public class Menu {
         }
     }
 
-    public void setDelete(String id) {
+    public static void setDelete(String id) {
         try {
             delete.setString(1, id);
             delete.executeUpdate();

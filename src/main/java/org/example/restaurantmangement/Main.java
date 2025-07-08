@@ -4,6 +4,7 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import org.example.restaurantmangement.Model.Food;
 import org.example.restaurantmangement.Model.Menu;
 
 import java.io.IOException;
@@ -19,7 +20,11 @@ public class Main extends Application {
         stage.show();
         Menu menu = new Menu();
         Menu.setStage(stage);
-
+//        HashMap<String, Long> hashMap = new HashMap<>();
+//
+//        hashMap.put("M", 10000L);
+//        hashMap.put("L", 20000L);
+//        menu.setInsert("dd3", "Trà chanh", "đồ uống", hashMap);
     }
 
     public static void main(String[] args) {

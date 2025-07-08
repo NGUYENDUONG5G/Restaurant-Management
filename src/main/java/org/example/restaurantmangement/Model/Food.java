@@ -14,9 +14,9 @@ public class Food {
     private HashMap<String, Long> price;
 
     public Food(String id, String name, String type, byte[] image) {
-        this.name = name;
-        this.id = id;
-        this.type = type;
+        this.setName(name);
+        this.setId(id);
+        this.setType(type);
         this.image = image;
         this.price = new HashMap<>();
     }
@@ -99,6 +99,14 @@ public class Food {
 
     public void setPrice(String size, long price) {
         this.price.put(size, price);
+    }
+
+    public String printPrice() {
+        String result = "";
+        for (String size_ : price.keySet()) {
+            result += size_ + " : " + price.get(size_) + "\n";
+        }
+        return result;
     }
 
     @Override
