@@ -7,6 +7,7 @@ import javafx.stage.Stage;
 import org.example.restaurantmangement.Model.Food;
 import org.example.restaurantmangement.Model.Menu;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 
@@ -17,14 +18,15 @@ public class Main extends Application {
         Scene scene = new Scene(fxmlLoader.load());
         stage.setTitle("Menu");
         stage.setScene(scene);
+        stage.setResizable(true);
         stage.show();
         Menu menu = new Menu();
-        Menu.setStage(stage);
 //        HashMap<String, Long> hashMap = new HashMap<>();
 //
-//        hashMap.put("M", 10000L);
-//        hashMap.put("L", 20000L);
-//        menu.setInsert("dd3", "Trà chanh", "đồ uống", hashMap);
+//        hashMap.put("M", 10000);
+//        hashMap.put("L", 18000);
+//        menu.setInsert("dd1", "Trà sữa", "đồ uống", hashMap,
+//                new File("C:\\Users\\Admin\\Pictures\\images.png"));
     }
 
     public static void main(String[] args) {

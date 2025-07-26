@@ -9,16 +9,22 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 
+
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import org.example.restaurantmangement.Model.Food;
 import org.example.restaurantmangement.Model.Menu;
 
+
+import java.io.File;
 import java.net.URL;
 import java.util.*;
 
@@ -36,27 +42,29 @@ public class MenuController implements Initializable {
     @FXML
     private TableColumn<Food, String> colType;
     @FXML
-    private Button enterFoods;
+    private Button buttonFoods;
     @FXML
-    private Button enterRevenue;
+    private Button buttonRevenue;
     @FXML
-    private Button enterSetting;
+    private Button buttonSetting;
     @FXML
     private TextField enterSearchFood;
     @FXML
-    private Button enterAddFood;
+    private Button butonSearch;
     @FXML
-    private Button enterEditFood;
+    private Button buttonAddFood;
+    @FXML
+    private Button buttonEditFood;
     @FXML
     private HBox lineFoodsTool;
     @FXML
     private HBox lineDetailTool;
     @FXML
-    private Button enterRemoveFood;
+    private Button buttonRemoveFood;
     @FXML
-    private Button enterDeleteFood;
+    private Button buttonDeleteFood;
     @FXML
-    private Button enterUpdateFood;
+    private Button buttonUpdateFood;
     @FXML
     private ImageView logoRestaurant;
     @FXML
@@ -70,27 +78,38 @@ public class MenuController implements Initializable {
     @FXML
     private AnchorPane anchorDetailFood;
     @FXML
+    private AnchorPane anchorListView;
+    @FXML
     private ImageView imageFood;
     @FXML
-    private TextField idFood;
+    private TextField enterNameFood;
     @FXML
-    private TextField nameFood;
+    private TextField enterTypeFood;
     @FXML
-    private TextField typeFood;
+    private TextField enterPriceL;
     @FXML
-    private TableColumn<Map.Entry<String, Long>, String> priceItem;
+    private TextField enterPriceM;
     @FXML
-    private TableColumn<Map.Entry<String, Long>, String> sizeItem;
+    private ListView<String> resultsSearch;
     @FXML
-    private TableView<Map.Entry<String, Long>> sizePrices;
+    private Label showIdFood;
+    @FXML
+    private Label showNameFood;
+    @FXML
+    private Label showPriceL;
+    @FXML
+    private Label showPriceM;
+    @FXML
+    private Label showTypeFood;
 
 
     private ObservableList<Food> foodList;
-    private ObservableList<Map.Entry<String, Long>> sizePriceList;
     private List<Pane> paneList;
     private Food selectedFood;
+    private File selectedFile;
     private Alert alert;
     private boolean isEditing;
+    private HashMap<TextField, String> findSizeFood;
 
     private void setVisiblePane(Pane pane) {
         for (Pane pane_ : paneList) {
@@ -100,11 +119,13 @@ public class MenuController implements Initializable {
             }
             pane_.setVisible(false);
             enterSearchFood.setVisible(false);
-            lineFoodsTool.setVisible(false);
-            setVisibleRemoveAndEdit(false, false);
+            butonSearch.setVisible(false);
             setAcceptEdit(false);
+            buttonAddFood.setVisible(false);
+            lineFoodsTool.setVisible(false);
             lineDetailTool.setVisible(false);
             setStyleItem("transparent");
+            setFoodsList(null);
         }
     }
 
@@ -185,55 +206,19 @@ public class MenuController implements Initializable {
     }
 
     private void processSelectedFood() {
-        idFood.setText(selectedFood.getId());
-        nameFood.setText(selectedFood.getName());
-        typeFood.setText(selectedFood.getType());
-        setPriceList();
-        sizePrices.setItems(sizePriceList);
+        showIdFood.setText(selectedFood.getId());
+        showNameFood.setText(selectedFood.getName());
+        enterNameFood.setText(selectedFood.getName());
+        showTypeFood.setText(selectedFood.getType());
+        enterTypeFood.setText(selectedFood.getType());
         imageFood.setImage(selectedFood.displayImage());
+        showPriceM.setText(selectedFood.getPrice("M") + "");
+        enterPriceM.setText(selectedFood.getPrice("M") + "");
+        showPriceL.setText(selectedFood.getPrice("L") + "");
+        enterPriceL.setText(selectedFood.getPrice("L") + "");
 
     }
 
-    private void setTablePrices() {
-        sizeItem.setCellValueFactory(cellData ->
-                new SimpleStringProperty(cellData.getValue().getKey())
-        );
-        sizeItem.setCellFactory(TextFieldTableCell.forTableColumn());
-        sizeItem.setOnEditCommit(event -> {
-            Map.Entry<String, Long> entry = event.getRowValue();
-            String oldSize = entry.getKey();
-            String newSize = event.getNewValue();
-
-            if (!newSize.isBlank()) {
-                Menu.setUpdateSize(selectedFood.getId(), oldSize, newSize);
-                selectedFood.setSize(oldSize, newSize);
-                sizePrices.setItems(FXCollections.observableArrayList(selectedFood.getPrice().entrySet()));
-                sizeItem.setStyle("-fx-border-color: transparent");
-            } else {
-                sizeItem.setStyle("-fx-border-color: red");
-            }
-        });
-
-
-        priceItem.setCellValueFactory(cellData ->
-                new SimpleStringProperty(String.valueOf(cellData.getValue().getValue()))
-        );
-        priceItem.setCellFactory(TextFieldTableCell.forTableColumn());
-        priceItem.setOnEditCommit(event -> {
-            Map.Entry<String, Long> entry = event.getRowValue();
-            String size = entry.getKey();
-            try {
-                long newPrice = Long.parseLong(event.getNewValue());
-                selectedFood.setPrice(size, newPrice);
-                sizePrices.refresh();
-                Menu.setUpdatePrice(selectedFood.getId(), size, String.valueOf(newPrice));
-                priceItem.setStyle("-fx-border-color: transparent");
-            } catch (NumberFormatException e) {
-                priceItem.setStyle("-fx-border-color: red");
-            }
-        });
-        sizePrices.setFixedCellSize(-1);
-    }
 
     private void showWarning(String content) {
         alert = new Alert(Alert.AlertType.WARNING);
@@ -253,103 +238,144 @@ public class MenuController implements Initializable {
     }
 
     private void setAcceptEdit(boolean content) {
-        nameFood.setEditable(content);
-        typeFood.setEditable(content);
-        sizeItem.setEditable(content);
-        priceItem.setEditable(content);
-        sizePrices.setEditable(content);
+        enterNameFood.setVisible(content);
+        enterTypeFood.setVisible(content);
+        enterPriceL.setVisible(content);
+        enterPriceM.setVisible(content);
+        showNameFood.setVisible(!content);
+        showTypeFood.setVisible(!content);
+        showPriceM.setVisible(!content);
+        showPriceL.setVisible(!content);
         isEditing = content;
-
+        lineDetailTool.setVisible(content);
+        lineFoodsTool.setVisible(!content);
     }
 
-    private void setVisibleRemoveAndEdit(boolean content, boolean isDetailFood) {
-        if (isDetailFood) {
-            enterAddFood.setVisible(!content);
-        } else {
-            enterAddFood.setVisible(content);
-        }
 
-        enterRemoveFood.setVisible(content);
-        enterEditFood.setVisible(content);
-    }
 
     private void processUpdateFood() {
-        String id = idFood.getText();
-        String name = nameFood.getText();
-        String type = typeFood.getText();
-
-
+        String id = showIdFood.getText();
+        String name = enterNameFood.getText();
+        String type = enterTypeFood.getText();
+        String priceM = enterPriceM.getText();
+        String priceL = enterPriceL.getText();
         if (!name.isBlank()) {
             Menu.setUpdateName(id, name);
-            nameFood.setStyle("-fx-border-color: transparent");
+            enterNameFood.setStyle("-fx-border-color: transparent");
         } else {
-            nameFood.setStyle("-fx-border-color: red");
+            enterNameFood.setStyle("-fx-border-color: red");
         }
 
         if (!type.isBlank()) {
             Menu.setUpdateType(id, type);
-            typeFood.setStyle("-fx-border-color: transparent");
+            enterTypeFood.setStyle("-fx-border-color: transparent");
         } else {
-            typeFood.setStyle("-fx-border-color: red");
+            enterTypeFood.setStyle("-fx-border-color: red");
         }
+        if (selectedFile != null) {
+            Menu.setUpdateImage(id, selectedFile);
+        }
+        try {
+            if (!priceM.isBlank()) {
+                Long.parseLong(priceM);
+                Menu.setUpdatePrice(id, findSizeFood.get(enterPriceM), priceM);
+                enterPriceM.setStyle("-fx-border-color: transparent");
+            } else {
+                enterPriceM.setStyle("-fx-border-color: red");
+            }
+        } catch (NumberFormatException e) {
+            enterPriceM.setStyle("-fx-border-color: red");
+        }
+        try {
+            if (!priceL.isBlank()) {
+                Long.parseLong(priceL);
+                Menu.setUpdatePrice(id, findSizeFood.get(enterPriceL), priceL);
+                enterPriceL.setStyle("-fx-border-color: transparent");
+            } else {
 
-
+                enterPriceL.setStyle("-fx-border-color: red");
+            }
+        } catch (NumberFormatException e) {
+            enterPriceL.setStyle("-fx-border-color: red");
+        }
+        if (!name.isBlank() && !type.isBlank() && !priceM.isBlank() && !priceL.isBlank()) {
+            setAcceptEdit(false);
+        }
+        processSelectedFood();
+        tableFoods.refresh();
+        setFoodsList(null);
     }
 
     private void setStyleItem(String style) {
-        idFood.setStyle("-fx-border-color: " + style);
-        nameFood.setStyle("-fx-border-color: " + style);
-        typeFood.setStyle("-fx-border-color: " + style);
-        priceItem.setStyle("-fx-border-color: " + style);
+        enterNameFood.setStyle("-fx-border-color: " + style);
+        enterTypeFood.setStyle("-fx-border-color: " + style);
+        enterPriceM.setStyle("-fx-border-color: " + style);
+        enterPriceL.setStyle("-fx-border-color: " + style);
     }
 
-    private void setPriceList() {
-        sizePriceList = FXCollections.observableArrayList(selectedFood.getPrice().entrySet());
-    }
 
-    private void setFoodsList() {
-        foodList = FXCollections.observableArrayList(Menu.getFoods().values());
+    private void setFoodsList(ObservableList<Food> foodList_) {
+        if (foodList_ == null) {
+            foodList = FXCollections.observableArrayList(Menu.getFoods().values());
+        } else {
+            foodList = foodList_;
+        }
+
         tableFoods.setItems(foodList);
+    }
+
+    private void processChooseImage() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Choose image");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Pictures", "*.png", "*.jpg", "*.jpeg", "*.gif")
+        );
+        selectedFile = fileChooser.showOpenDialog((Stage) tableFoods.getScene().getWindow());
+
     }
 
     @FXML
     void actionAnchor(ActionEvent event) {
-        if (event.getSource() == enterFoods) {
+        if (event.getSource() == buttonFoods) {
             setVisiblePane(anchorFoods);
-            setFoodsList();
             enterSearchFood.setVisible(true);
-            lineFoodsTool.setVisible(true);
+            butonSearch.setVisible(true);
+            buttonAddFood.setVisible(true);
 
-        } else if (event.getSource() == enterRevenue) {
+        } else if (event.getSource() == buttonRevenue) {
             setVisiblePane(anchorRevenue);
-        } else if (event.getSource() == enterSetting) {
+        } else if (event.getSource() == buttonSetting) {
             setVisiblePane(anchorSetting);
         }
     }
 
     @FXML
     void actionFood(ActionEvent event) {
-        if (event.getSource() == enterRemoveFood) {
+        if (event.getSource() == buttonRemoveFood) {
             if (showConfirm("Are you sure you want to delete this item?")) {
                 Menu.setDelete(selectedFood.getId());
                 setVisiblePane(anchorFoods);
-                setFoodsList();
+                enterSearchFood.setVisible(true);
+                butonSearch.setVisible(true);
+
             }
-        } else if (event.getSource() == enterEditFood) {
+        } else if (event.getSource() == buttonEditFood) {
             setVisiblePane(anchorDetailFood);
             lineDetailTool.setVisible(true);
             setAcceptEdit(true);
 
 
-        } else if (event.getSource() == enterAddFood) {
+        } else if (event.getSource() == buttonAddFood) {
 
-        } else if (event.getSource() == enterDeleteFood) {
+        } else if (event.getSource() == buttonDeleteFood) {
             if (showConfirm("Are you sure you want to delete this item?")) {
                 Menu.setDelete(selectedFood.getId());
                 setVisiblePane(anchorFoods);
-                setFoodsList();
+                enterSearchFood.setVisible(true);
+                butonSearch.setVisible(true);
+
             }
-        } else if (event.getSource() == enterUpdateFood) {
+        } else if (event.getSource() == buttonUpdateFood) {
             if (showConfirm("Are you sure you want to update this item")) {
                 processUpdateFood();
             }
@@ -358,18 +384,29 @@ public class MenuController implements Initializable {
 
     @FXML
     void actionKeySearch(KeyEvent event) {
-
+        if (event.getCode() == KeyCode.ENTER) {
+            String searchInfo = enterSearchFood.getText();
+            ObservableList<Food> filteredSuggestions = FXCollections.observableArrayList();
+            for (Food food : Menu.getFoods().values()) {
+                String suggestion = food.toString();
+                if (suggestion.toLowerCase().contains(searchInfo.toLowerCase())) {
+                    filteredSuggestions.add(food);
+                }
+            }
+            setFoodsList(filteredSuggestions);
+        }
     }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         isEditing = false;
-        setFoodsList();
+        setFoodsList(null);
+        findSizeFood = new HashMap<>();
+        findSizeFood.put(enterPriceM, "M");
+        findSizeFood.put(enterPriceL, "L");
         tableFoods.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        sizePrices.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        paneList = Arrays.asList(anchorFoods, anchorRevenue, anchorSetting, anchorDetailFood);
+        paneList = Arrays.asList(anchorFoods, anchorRevenue, anchorSetting, anchorDetailFood, anchorListView);
         setTableFoods();
-        setTablePrices();
         tableFoods.setItems(foodList);
         tableFoods.setRowFactory(tv -> {
             TableRow<Food> row = new TableRow<>();
@@ -378,11 +415,9 @@ public class MenuController implements Initializable {
                     selectedFood = row.getItem();
                     setVisiblePane(anchorDetailFood);
                     lineFoodsTool.setVisible(true);
-                    setVisibleRemoveAndEdit(true, true);
                     processSelectedFood();
                 } else if (!row.isEmpty() && event.getClickCount() == 1) {
-                    setVisibleRemoveAndEdit(true, false);
-                    setAcceptEdit(true);
+                    lineFoodsTool.setVisible(true);
                     selectedFood = row.getItem();
                     processSelectedFood();
                 }
@@ -393,10 +428,40 @@ public class MenuController implements Initializable {
 
         imageFood.setOnMouseClicked(event -> {
             if (isEditing) {
-                Menu.setUpdateImage(selectedFood.getId());
+                processChooseImage();
+                if (selectedFile != null) {
+                    imageFood.setImage(new Image(selectedFile.toURI().toString()));
+                }
             }
         });
 
+        enterSearchFood.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue.isEmpty()) {
+                anchorListView.setVisible(false);
+            } else {
+                ObservableList<String> filteredSuggestions = FXCollections.observableArrayList();
+                for (Food food : Menu.getFoods().values()) {
+                    String suggestion = food.toString();
+                    if (suggestion.toLowerCase().contains(newValue.toLowerCase())) {
+                        filteredSuggestions.add(suggestion);
+                    }
+                }
 
+                resultsSearch.setItems(filteredSuggestions);
+                anchorListView.setVisible(!filteredSuggestions.isEmpty());
+
+            }
+        });
+
+        resultsSearch.setOnMouseClicked(event -> {
+            String selectedItem = resultsSearch.getSelectionModel().getSelectedItem();
+            String[] splitStr = selectedItem.split(" | ");
+            if (selectedItem != null) {
+                selectedFood = Menu.getFoods().get(splitStr[0]);
+                setVisiblePane(anchorDetailFood);
+                lineFoodsTool.setVisible(true);
+                processSelectedFood();
+            }
+        });
     }
 }

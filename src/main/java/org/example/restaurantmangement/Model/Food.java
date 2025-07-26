@@ -83,7 +83,7 @@ public class Food {
         price.remove(oldSize);
     }
 
-    public double getPrice(String size) {
+    public long getPrice(String size) {
         return this.price.get(size);
     }
 
@@ -109,14 +109,9 @@ public class Food {
         return result;
     }
 
+
     @Override
     public String toString() {
-        return "Food{" +
-                "name='" + name + '\'' +
-                ", id='" + id + '\'' +
-                ", type='" + type + '\'' +
-                ", image=" + Arrays.toString(image) +
-                ", price=" + price +
-                '}';
+        return id + " | " + name + " | " + type + " | " + price;
     }
 }

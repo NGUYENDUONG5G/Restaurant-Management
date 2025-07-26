@@ -1,7 +1,5 @@
 package org.example.restaurantmangement.Model;
 
-import javafx.stage.FileChooser;
-import javafx.stage.Stage;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -12,7 +10,6 @@ import java.util.HashMap;
 public class Menu {
 
 
-    private static Stage stage;
     public static PreparedStatement insertMenu, insertPrice, selectMenu, selectPrice, updateName,
             updateType, updateSize, updatePrice, updateImage, delete;
     private static final String insertQueryMenu = "INSERT INTO menu (id, name, type, image) VALUES(?, ?, ?, ?)";
@@ -50,20 +47,11 @@ public class Menu {
         return foods;
     }
 
-    public static void setStage(Stage stage) {
-        Menu.stage = stage;
-    }
 
-    public static void setInsert(String id, String name, String type, HashMap<String, Long> prices) {
+    public static void setInsert(String id, String name, String type, HashMap<String, Long> prices, File selectedFile) {
         if (foods.containsKey(id)) {
             return;
         }
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Choose image");
-        fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("Pictures", "*.png", "*.jpg", "*.jpeg", "*.gif")
-        );
-        File selectedFile = fileChooser.showOpenDialog(stage);
         byte[] byteImage;
         if (selectedFile != null) {
             try (FileInputStream fis = new FileInputStream(selectedFile)) {
@@ -123,22 +111,16 @@ public class Menu {
 
     }
 
-    public static void setUpdateImage(String id) {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Choose image");
-        fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("Pictures", "*.png", "*.jpg", "*.jpeg", "*.gif")
-        );
-        File selectedFile = fileChooser.showOpenDialog(stage);
+    public static void setUpdateImage(String id, File selectedFile) {
         if (selectedFile != null) {
             try (FileInputStream fis = new FileInputStream(selectedFile)) {
-                byte[] bytes = new byte[(int) selectedFile.length()];
-                fis.read(bytes);
+                byte[] byteImage = Files.readAllBytes(selectedFile.toPath());
+                ByteArrayInputStream bais = new ByteArrayInputStream(byteImage);
 
                 updateImage.setBinaryStream(1, fis, fis.available());
                 updateImage.setString(2, id);
                 updateImage.executeUpdate();
-                foods.get(id).setImage(bytes);
+                foods.get(id).setImage(byteImage);
 
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -158,7 +140,7 @@ public class Menu {
             updateSize.setString(3, oldSize);
             updateSize.executeUpdate();
             foods.get(id).setSize(oldSize, newSize);
-
+            System.out.println(newSize);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -167,15 +149,17 @@ public class Menu {
 
     public static void setUpdatePrice(String id, String size, String price) {
         try {
-            updatePrice.setString(1, price);
+            System.out.println(price);
+            updatePrice.setLong(1, Long.parseLong(price));
             updatePrice.setString(2, id);
             updatePrice.setString(3, size);
             updatePrice.executeUpdate();
             foods.get(id).setPrice(size, Long.parseLong(price));
 
-
         } catch (SQLException e) {
             e.printStackTrace();
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid price format: " + price);
         }
 
     }

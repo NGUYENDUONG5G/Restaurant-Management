@@ -3,6 +3,8 @@
 <?import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
@@ -10,144 +12,193 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="625.0" prefWidth="862.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.restaurantmangement.Controller.MenuController">
-   <top>
-      <AnchorPane prefHeight="77.0" prefWidth="600.0" style="-fx-background-color: #FF6600;" BorderPane.alignment="CENTER">
-         <children>
-            <TextField fx:id="enterSearchFood" layoutX="133.0" layoutY="21.0" onAction="#actionFood" onKeyPressed="#actionKeySearch" prefHeight="34.0" prefWidth="670.0" promptText="🔎 Find food" style="-fx-background-radius: 15;" AnchorPane.bottomAnchor="23.199999999999996" AnchorPane.leftAnchor="130.0" AnchorPane.rightAnchor="61.60000000000002" AnchorPane.topAnchor="20.0">
-               <font>
-                  <Font name="Times New Roman" size="15.0" />
-               </font>
-            </TextField>
-            <ImageView fx:id="logoRestaurant" fitHeight="63.0" fitWidth="66.0" layoutX="20.0" layoutY="7.0" pickOnBounds="true" preserveRatio="true" AnchorPane.bottomAnchor="7.3999999999999915" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="776.4" AnchorPane.topAnchor="7.0" />
-         </children>
-      </AnchorPane>
-   </top>
-   <bottom>
-      <AnchorPane prefHeight="77.0" prefWidth="862.0" style="-fx-background-color: #FF9966;" BorderPane.alignment="CENTER">
-         <children>
-            <HBox fx:id="lineFoodsTool" layoutX="407.0" layoutY="10.0" prefHeight="35.0" prefWidth="328.0" AnchorPane.bottomAnchor="25.599999999999987" AnchorPane.leftAnchor="407.0" AnchorPane.rightAnchor="127.19999999999999" AnchorPane.topAnchor="10.0">
+<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.restaurantmangement.Controller.MenuController">
+   <children>
+      <BorderPane minHeight="-Infinity" minWidth="-Infinity">
+         <top>
+            <AnchorPane prefHeight="77.0" prefWidth="600.0" style="-fx-background-color: #FF6600;" BorderPane.alignment="CENTER">
                <children>
-                  <Button fx:id="enterAddFood" mnemonicParsing="false" onAction="#actionFood" prefHeight="26.0" prefWidth="93.0" style="-fx-background-radius: 15;" text=" ADD">
+                  <TextField fx:id="enterSearchFood" layoutX="133.0" layoutY="21.0" onAction="#actionFood" onKeyPressed="#actionKeySearch" prefHeight="34.0" prefWidth="618.0" promptText="🔎 Find food" style="-fx-background-radius: 15;" AnchorPane.bottomAnchor="23.0" AnchorPane.leftAnchor="130.0" AnchorPane.rightAnchor="115.0" AnchorPane.topAnchor="20.0">
+                     <font>
+                        <Font name="Times New Roman" size="15.0" />
+                     </font>
+                  </TextField>
+                  <ImageView fx:id="logoRestaurant" fitHeight="63.0" fitWidth="66.0" layoutX="20.0" layoutY="7.0" pickOnBounds="true" preserveRatio="true" AnchorPane.bottomAnchor="7.3999999999999915" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="776.4" AnchorPane.topAnchor="7.0" />
+                  <Button fx:id="butonSearch" layoutX="693.0" layoutY="21.0" mnemonicParsing="false" onAction="#actionFood" prefHeight="32.0" prefWidth="54.0" style="-fx-background-radius: 15;" text="🔍" AnchorPane.bottomAnchor="24.799999999999997" AnchorPane.rightAnchor="116.00000000000009" AnchorPane.topAnchor="21.0">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Button>
+               </children>
+            </AnchorPane>
+         </top>
+         <bottom>
+            <AnchorPane prefHeight="77.0" prefWidth="862.0" style="-fx-background-color: #FF9966;" BorderPane.alignment="CENTER">
+               <children>
+                  <HBox fx:id="lineFoodsTool" layoutX="459.0" layoutY="10.0" prefHeight="42.0" prefWidth="225.0" visible="false" AnchorPane.bottomAnchor="25.200000000000003" AnchorPane.leftAnchor="459.0" AnchorPane.rightAnchor="179.39999999999998" AnchorPane.topAnchor="10.0">
+                     <children>
+                        <Button fx:id="buttonRemoveFood" mnemonicParsing="false" onAction="#actionFood" prefHeight="32.0" prefWidth="93.0" style="-fx-background-radius: 15;" text=" REMOVE">
+                           <graphic>
+                              <FontAwesomeIcon glyphName="TIMES" size="2em" />
+                           </graphic>
+                           <HBox.margin>
+                              <Insets right="20.0" />
+                           </HBox.margin>
+                        </Button>
+                        <Button fx:id="buttonEditFood" mnemonicParsing="false" onAction="#actionFood" prefHeight="32.0" prefWidth="93.0" style="-fx-background-radius: 15;" text="EDIT">
+                           <graphic>
+                              <FontAwesomeIcon glyphName="EDIT" size="2em" />
+                           </graphic>
+                        </Button>
+                     </children>
+                     <padding>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                     </padding>
+                  </HBox>
+                  <HBox fx:id="lineDetailTool" layoutX="499.0" layoutY="13.0" prefHeight="50.0" prefWidth="274.0" visible="false" AnchorPane.bottomAnchor="25.6" AnchorPane.leftAnchor="407.2" AnchorPane.rightAnchor="127.19999999999999" AnchorPane.topAnchor="10.4">
+                     <children>
+                        <Button fx:id="buttonDeleteFood" mnemonicParsing="false" onAction="#actionFood" prefHeight="45.0" prefWidth="112.0" style="-fx-background-radius: 15;" text="DELETE">
+                           <HBox.margin>
+                              <Insets right="40.0" />
+                           </HBox.margin>
+                        </Button>
+                        <Button fx:id="buttonUpdateFood" mnemonicParsing="false" onAction="#actionFood" prefHeight="45.0" prefWidth="112.0" style="-fx-background-radius: 15;" text="UPDATE" />
+                     </children>
+                     <padding>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                     </padding>
+                  </HBox>
+                  <Button fx:id="buttonAddFood" layoutX="338.0" layoutY="15.0" mnemonicParsing="false" onAction="#actionFood" prefHeight="26.0" prefWidth="93.0" style="-fx-background-radius: 15;" text=" ADD">
                      <graphic>
                         <FontAwesomeIcon glyphName="PLUS" size="2em" />
                      </graphic>
-                     <HBox.margin>
-                        <Insets right="20.0" />
-                     </HBox.margin>
                   </Button>
-                  <Button fx:id="enterRemoveFood" mnemonicParsing="false" onAction="#actionFood" prefHeight="32.0" prefWidth="93.0" style="-fx-background-radius: 15;" text=" REMOVE" visible="false">
+               </children>
+            </AnchorPane>
+         </bottom>
+         <left>
+            <VBox prefHeight="470.0" prefWidth="122.0" BorderPane.alignment="CENTER">
+               <children>
+                  <Button fx:id="buttonFoods" mnemonicParsing="false" onAction="#actionAnchor" prefHeight="70.0" prefWidth="100.0" text="Foods" VBox.vgrow="ALWAYS">
                      <graphic>
-                        <FontAwesomeIcon glyphName="TIMES" size="2em" />
+                        <FontAwesomeIcon glyphName="LIST" size="2em" />
                      </graphic>
-                     <HBox.margin>
-                        <Insets right="20.0" />
-                     </HBox.margin>
+                     <VBox.margin>
+                        <Insets bottom="10.0" top="10.0" />
+                     </VBox.margin>
                   </Button>
-                  <Button fx:id="enterEditFood" mnemonicParsing="false" onAction="#actionFood" prefHeight="32.0" prefWidth="93.0" style="-fx-background-radius: 15;" text="EDIT" visible="false">
+                  <Button fx:id="buttonRevenue" mnemonicParsing="false" onAction="#actionAnchor" prefHeight="70.0" prefWidth="100.0" text="Revenue" VBox.vgrow="ALWAYS">
                      <graphic>
-                        <FontAwesomeIcon glyphName="EDIT" size="2em" />
+                        <FontAwesomeIcon glyphName="FILE" size="2em" />
+                     </graphic>
+                     <VBox.margin>
+                        <Insets bottom="10.0" />
+                     </VBox.margin>
+                  </Button>
+                  <Button fx:id="buttonSetting" mnemonicParsing="false" onAction="#actionAnchor" prefHeight="70.0" prefWidth="100.0" text="Setting" VBox.vgrow="ALWAYS">
+                     <graphic>
+                        <FontAwesomeIcon glyphName="GEAR" size="2em" />
                      </graphic>
                   </Button>
                </children>
                <padding>
-                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                  <Insets left="10.0" right="10.0" />
                </padding>
-            </HBox>
-            <HBox fx:id="lineDetailTool" layoutX="499.0" layoutY="13.0" prefHeight="50.0" prefWidth="274.0" visible="false" AnchorPane.bottomAnchor="25.6" AnchorPane.leftAnchor="407.2" AnchorPane.rightAnchor="127.19999999999999" AnchorPane.topAnchor="10.4">
+            </VBox>
+         </left>
+         <center>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
                <children>
-                  <Button fx:id="enterDeleteFood" mnemonicParsing="false" onAction="#actionFood" prefHeight="45.0" prefWidth="112.0" style="-fx-background-radius: 15;" text="DELETE">
-                     <HBox.margin>
-                        <Insets right="40.0" />
-                     </HBox.margin>
-                  </Button>
-                  <Button fx:id="enterUpdateFood" mnemonicParsing="false" onAction="#actionFood" prefHeight="45.0" prefWidth="112.0" style="-fx-background-radius: 15;" text="UPDATE" />
-               </children>
-               <padding>
-                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-               </padding>
-            </HBox>
-         </children>
-      </AnchorPane>
-   </bottom>
-   <left>
-      <VBox prefHeight="470.0" prefWidth="122.0" BorderPane.alignment="CENTER">
-         <children>
-            <Button fx:id="enterFoods" mnemonicParsing="false" onAction="#actionAnchor" prefHeight="70.0" prefWidth="100.0" text="Foods" VBox.vgrow="ALWAYS">
-               <graphic>
-                  <FontAwesomeIcon glyphName="LIST" size="2em" />
-               </graphic>
-               <VBox.margin>
-                  <Insets bottom="10.0" top="10.0" />
-               </VBox.margin>
-            </Button>
-            <Button fx:id="enterRevenue" mnemonicParsing="false" onAction="#actionAnchor" prefHeight="70.0" prefWidth="100.0" text="Revenue" VBox.vgrow="ALWAYS">
-               <graphic>
-                  <FontAwesomeIcon glyphName="FILE" size="2em" />
-               </graphic>
-               <VBox.margin>
-                  <Insets bottom="10.0" />
-               </VBox.margin>
-            </Button>
-            <Button fx:id="enterSetting" mnemonicParsing="false" onAction="#actionAnchor" prefHeight="70.0" prefWidth="100.0" text="Setting" VBox.vgrow="ALWAYS">
-               <graphic>
-                  <FontAwesomeIcon glyphName="GEAR" size="2em" />
-               </graphic>
-            </Button>
-         </children>
-         <padding>
-            <Insets left="10.0" right="10.0" />
-         </padding>
-      </VBox>
-   </left>
-   <center>
-      <AnchorPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
-         <children>
-            <AnchorPane fx:id="anchorFoods" prefHeight="469.0" prefWidth="750.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-               <children>
-                  <TableView fx:id="tableFoods" prefHeight="470.0" prefWidth="745.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                     <columns>
-                        <TableColumn fx:id="colID" minWidth="0.0" prefWidth="149.0" text="ID" />
-                        <TableColumn fx:id="colName" minWidth="0.0" prefWidth="149.0" text="Name" />
-                        <TableColumn fx:id="colType" minWidth="0.0" prefWidth="149.0" text="Type" />
-                        <TableColumn fx:id="colSize" minWidth="0.0" prefWidth="149.0" text="Size" />
-                        <TableColumn fx:id="colPrice" prefWidth="149.0" text="Price" />
-                     </columns>
-                  </TableView>
+                  <AnchorPane fx:id="anchorFoods" prefHeight="469.0" prefWidth="750.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                     <children>
+                        <TableView fx:id="tableFoods" prefHeight="470.0" prefWidth="745.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <columns>
+                              <TableColumn fx:id="colID" minWidth="0.0" prefWidth="149.0" text="ID" />
+                              <TableColumn fx:id="colName" minWidth="0.0" prefWidth="149.0" text="Name" />
+                              <TableColumn fx:id="colType" minWidth="0.0" prefWidth="149.0" text="Type" />
+                              <TableColumn fx:id="colSize" minWidth="0.0" prefWidth="149.0" text="Size" />
+                              <TableColumn fx:id="colPrice" prefWidth="149.0" text="Price" />
+                           </columns>
+                        </TableView>
+                     </children>
+                  </AnchorPane>
+                  <AnchorPane fx:id="anchorDetailFood" prefHeight="470.0" prefWidth="745.0" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                     <children>
+                        <ImageView fx:id="imageFood" fitHeight="163.0" fitWidth="218.0" layoutX="466.0" layoutY="39.0" pickOnBounds="true" preserveRatio="true" AnchorPane.bottomAnchor="268.2" AnchorPane.rightAnchor="55.60000000000002" AnchorPane.topAnchor="39.0" />
+                        <TextField fx:id="enterNameFood" layoutX="52.0" layoutY="121.0" prefHeight="42.0" prefWidth="270.0" promptText="Name:" visible="false" AnchorPane.leftAnchor="52.0" AnchorPane.rightAnchor="417.6">
+                           <font>
+                              <Font name="Times New Roman" size="25.0" />
+                           </font>
+                        </TextField>
+                        <TextField fx:id="enterTypeFood" layoutX="52.0" layoutY="189.0" prefHeight="42.0" prefWidth="270.0" promptText="Type:" visible="false" AnchorPane.leftAnchor="52.0" AnchorPane.rightAnchor="417.6">
+                           <font>
+                              <Font name="Times New Roman" size="25.0" />
+                           </font>
+                        </TextField>
+                        <Label alignment="CENTER" layoutX="59.0" layoutY="287.0" prefHeight="35.0" prefWidth="45.0" style="-fx-border-color: #FF9966;" text="M" textAlignment="CENTER" AnchorPane.leftAnchor="59.0">
+                           <font>
+                              <Font size="22.0" />
+                           </font>
+                        </Label>
+                        <Label alignment="CENTER" layoutX="59.0" layoutY="345.0" prefHeight="35.0" prefWidth="45.0" style="-fx-border-color: #FF9966;" text="L" AnchorPane.leftAnchor="59.2">
+                           <font>
+                              <Font size="22.0" />
+                           </font>
+                        </Label>
+                        <TextField fx:id="enterPriceM" layoutX="129.0" layoutY="287.0" prefHeight="34.0" prefWidth="164.0" promptText="PriceM" visible="false" AnchorPane.leftAnchor="129.0" AnchorPane.rightAnchor="448.0">
+                           <font>
+                              <Font size="15.0" />
+                           </font>
+                        </TextField>
+                        <TextField fx:id="enterPriceL" layoutX="129.0" layoutY="346.0" prefHeight="34.0" prefWidth="164.0" promptText="PriceL" visible="false" AnchorPane.leftAnchor="128.8" AnchorPane.rightAnchor="448.0">
+                           <font>
+                              <Font size="15.0" />
+                           </font>
+                        </TextField>
+                        <Label fx:id="showIdFood" layoutX="52.0" layoutY="51.0" prefHeight="42.0" prefWidth="270.0" style="-fx-border-color: #FF9966;" text="ID">
+                           <font>
+                              <Font name="Times New Roman" size="25.0" />
+                           </font>
+                        </Label>
+                        <Label fx:id="showNameFood" layoutX="52.0" layoutY="122.0" prefHeight="42.0" prefWidth="270.0" style="-fx-border-color: #FF9966;" text="Name">
+                           <font>
+                              <Font name="Times New Roman" size="25.0" />
+                           </font>
+                        </Label>
+                        <Label fx:id="showTypeFood" layoutX="52.0" layoutY="190.0" prefHeight="42.0" prefWidth="270.0" style="-fx-border-color: #FF9966;" text="Type">
+                           <font>
+                              <Font name="Times New Roman" size="25.0" />
+                           </font>
+                        </Label>
+                        <Label fx:id="showPriceM" layoutX="129.0" layoutY="287.0" prefHeight="34.0" prefWidth="164.0" style="-fx-border-color: #FF9966;" text="PriceM">
+                           <font>
+                              <Font size="15.0" />
+                           </font>
+                        </Label>
+                        <Label fx:id="showPriceL" layoutX="129.0" layoutY="345.0" prefHeight="34.0" prefWidth="164.0" style="-fx-border-color: #FF9966;" text="PriceL">
+                           <font>
+                              <Font size="15.0" />
+                           </font>
+                        </Label>
+                     </children>
+                  </AnchorPane>
+                  <AnchorPane fx:id="anchorRevenue" prefHeight="470.0" prefWidth="745.0" style="-fx-background-color: red;" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                  <AnchorPane fx:id="anchorSetting" prefHeight="469.0" prefWidth="745.0" style="-fx-background-color: green;" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                </children>
             </AnchorPane>
-            <AnchorPane fx:id="anchorDetailFood" prefHeight="470.0" prefWidth="745.0" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-               <children>
-                  <ImageView fx:id="imageFood" fitHeight="163.0" fitWidth="218.0" layoutX="466.0" layoutY="39.0" pickOnBounds="true" preserveRatio="true" AnchorPane.bottomAnchor="268.2" AnchorPane.rightAnchor="55.60000000000002" AnchorPane.topAnchor="39.0" />
-                  <TextField fx:id="idFood" editable="false" layoutX="52.0" layoutY="54.0" prefHeight="42.0" prefWidth="270.0" promptText="ID:" AnchorPane.leftAnchor="52.0" AnchorPane.rightAnchor="417.6">
-                     <font>
-                        <Font name="Times New Roman" size="25.0" />
-                     </font>
-                  </TextField>
-                  <TextField fx:id="nameFood" editable="false" layoutX="52.0" layoutY="121.0" prefHeight="42.0" prefWidth="270.0" promptText="Name:" AnchorPane.leftAnchor="52.0" AnchorPane.rightAnchor="417.6">
-                     <font>
-                        <Font name="Times New Roman" size="25.0" />
-                     </font>
-                  </TextField>
-                  <TextField fx:id="typeFood" editable="false" layoutX="52.0" layoutY="189.0" prefHeight="42.0" prefWidth="270.0" promptText="Type:" AnchorPane.leftAnchor="52.0" AnchorPane.rightAnchor="417.6">
-                     <font>
-                        <Font name="Times New Roman" size="25.0" />
-                     </font>
-                  </TextField>
-                  <TableView fx:id="sizePrices" layoutX="52.0" layoutY="249.0" prefHeight="200.0" prefWidth="261.0" AnchorPane.bottomAnchor="21.599999999999966" AnchorPane.leftAnchor="52.0" AnchorPane.rightAnchor="426.4" AnchorPane.topAnchor="249.0">
-                    <columns>
-                      <TableColumn fx:id="sizeItem" prefWidth="75.20001983642578" text="Size" />
-                      <TableColumn fx:id="priceItem" prefWidth="185.59999084472656" text="Price" />
-                    </columns>
-                  </TableView>
-               </children>
-            </AnchorPane>
-            <AnchorPane fx:id="anchorRevenue" prefHeight="470.0" prefWidth="745.0" style="-fx-background-color: red;" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-            <AnchorPane fx:id="anchorSetting" prefHeight="469.0" prefWidth="745.0" style="-fx-background-color: green;" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+         </center>
+         <StackPane.margin>
+            <Insets />
+         </StackPane.margin>
+      </BorderPane>
+      <AnchorPane fx:id="anchorListView" pickOnBounds="false" prefHeight="626.0" prefWidth="810.0" visible="false">
+         <children>
+            <ListView fx:id="resultsSearch" layoutX="145.0" layoutY="55.0" prefHeight="43.0" prefWidth="548.0" AnchorPane.bottomAnchor="527.1999999999999" AnchorPane.leftAnchor="145.0" AnchorPane.rightAnchor="169.5999999999999" AnchorPane.topAnchor="55.0" />
          </children>
       </AnchorPane>
-   </center>
-</BorderPane>
+   </children>
+</StackPane>
