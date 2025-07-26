@@ -184,6 +184,13 @@
                               <Font size="15.0" />
                            </font>
                         </Label>
+                        <TextField fx:id="enterIdFood" layoutX="52.0" layoutY="51.0" prefHeight="42.0" prefWidth="270.0" promptText="ID:" visible="false">
+                           <font>
+                              <Font name="Times New Roman" size="25.0" />
+                           </font>
+                        </TextField>
+                        <Button fx:id="buttonChooseImage" layoutX="514.0" layoutY="260.0" mnemonicParsing="false" onMouseClicked="#actionChooseImage" prefHeight="34.0" prefWidth="122.0" text="📷 Choose Image" />
+                        <Button fx:id="buttonSave" layoutX="524.0" layoutY="417.0" mnemonicParsing="false" onMouseClicked="#actionSaveInfo" prefHeight="26.0" prefWidth="102.0" style="-fx-background-color: #84f5e0;" text="Save" />
                      </children>
                   </AnchorPane>
                   <AnchorPane fx:id="anchorRevenue" prefHeight="470.0" prefWidth="745.0" style="-fx-background-color: red;" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
