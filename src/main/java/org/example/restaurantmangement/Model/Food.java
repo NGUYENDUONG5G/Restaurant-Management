@@ -13,12 +13,14 @@ public class Food {
     private byte[] image;
     private HashMap<String, Long> price;
 
+
     public Food(String id, String name, String type, byte[] image) {
         this.setName(name);
         this.setId(id);
         this.setType(type);
         this.image = image;
         this.price = new HashMap<>();
+
     }
 
     public String getType() {
