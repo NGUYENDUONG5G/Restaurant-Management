@@ -6,3 +6,16 @@
     -fx-hbar-policy: never;
     -fx-vbar-policy: never;
 }
+.switch-button {
+    -fx-background-color: #f0941d;
+    -fx-background-radius: 15;
+    -fx-padding: 5 30 5 30;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.switch-button:selected {
+    -fx-background-color: #4cd137;
+}
+

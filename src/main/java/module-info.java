@@ -12,7 +12,8 @@ module org.example.restaurantmangement {
     requires com.almasb.fxgl.all;
     requires java.sql;
     requires java.management;
-    requires java.desktop;
+    requires itextpdf;
+    requires javafx.swing;
 
     opens org.example.restaurantmangement to javafx.fxml;
     opens org.example.restaurantmangement.Model to javafx.base;

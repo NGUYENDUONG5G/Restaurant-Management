@@ -4,7 +4,6 @@ package org.example.restaurantmangement.Model;
 import java.io.*;
 import java.nio.file.Files;
 import java.sql.*;
-import java.util.Arrays;
 import java.util.HashMap;
 
 public class Menu {
@@ -85,7 +84,8 @@ public class Menu {
 
     public static void setUpdateName(String id, String newName) {
         try {
-            foods.get(id).setName(newName);
+            id=id.trim();
+            foods.get(id).setName(newName.trim());
             updateName.setString(1, foods.get(id).getName());
             updateName.setString(2, id);
             updateName.executeUpdate();
@@ -99,7 +99,8 @@ public class Menu {
 
     public static void setUpdateType(String id, String type) {
         try {
-            foods.get(id).setType(type);
+            id=id.trim();
+            foods.get(id).setType(type.trim());
             updateType.setString(1, foods.get(id).getType());
             updateType.setString(2, id);
             updateType.executeUpdate();
@@ -112,7 +113,9 @@ public class Menu {
     }
 
     public static void setUpdateImage(String id, File selectedFile) {
+
         if (selectedFile != null) {
+            id=id.trim();
             try (FileInputStream fis = new FileInputStream(selectedFile)) {
                 byte[] byteImage = Files.readAllBytes(selectedFile.toPath());
                 ByteArrayInputStream bais = new ByteArrayInputStream(byteImage);
@@ -140,7 +143,7 @@ public class Menu {
             updateSize.setString(3, oldSize);
             updateSize.executeUpdate();
             foods.get(id).setSize(oldSize, newSize);
-            System.out.println(newSize);
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -149,7 +152,8 @@ public class Menu {
 
     public static void setUpdatePrice(String id, String size, String price) {
         try {
-            System.out.println(price);
+            id=id.trim();
+            price=price.trim();
             updatePrice.setLong(1, Long.parseLong(price));
             updatePrice.setString(2, id);
             updatePrice.setString(3, size);
@@ -184,9 +188,7 @@ public class Menu {
                     food.setPrice(size, price);
                 }
                 foods.put(id, food);
-                for (Food food_ : foods.values()) {
-                    System.out.println(food_.toString());
-                }
+
             }
         } catch (SQLException e) {
             e.printStackTrace();

@@ -8,64 +8,74 @@ import java.util.HashMap;
 import java.util.List;
 
 public class RevenueStatistics {
-    private static HashMap<LocalDate, List<Bill>> billsByDate = new HashMap<>();
-    private static HashMap<String, Bill> billList = new HashMap<>();
-    private static PreparedStatement insertBill, deleteBill, insertFood, deleteFood, selectBill, selectFood;
-    private static String insertQueryBill = "INSERT INTO bill_statistic (id, time, value) VALUES(?, ?, ?)";
+    private static HashMap<LocalDate, List<Invoice>> invoicesByDate = new HashMap<>();
+    private static HashMap<String, Invoice> invoiceList = new HashMap<>();
+    private static PreparedStatement insertInvoice, deleteInvoice, insertFood, deleteFood, selectInvoice, selectFood;
+    private static String insertQueryinvoice = "INSERT INTO bill_statistic (id, time, value) VALUES(?, ?, ?)";
     private static String insertQueryFood = "INSERT INTO foods_of_bill (id, id_food, size, total) VALUES(?, ?, ?, ?)";
-    private static String deleteQueryBill = "DELETE FROM bill_statistic WHERE id = ?";
+    private static String deleteQueryinvoice = "DELETE FROM bill_statistic WHERE id = ?";
     private static String deleteQueryFood = "DELETE FROM foods_of_bill WHERE id = ?";
-    private static String selectQueryBill = "SELECT * FROM bill_statistic";
+    private static String selectQueryInvoice = "SELECT * FROM bill_statistic";
     private static String selectQueryFood = "SELECT * FROM foods_of_bill WHERE id = ?";
 
     static {
         Connection connection = ConnectionDB.getConnection();
         try {
-            insertBill = connection.prepareStatement(insertQueryBill);
-            deleteBill = connection.prepareStatement(deleteQueryBill);
+            insertInvoice = connection.prepareStatement(insertQueryinvoice);
+            deleteInvoice = connection.prepareStatement(deleteQueryinvoice);
             insertFood = connection.prepareStatement(insertQueryFood);
             deleteFood = connection.prepareStatement(deleteQueryFood);
-            selectBill = connection.prepareStatement(selectQueryBill);
+            selectInvoice = connection.prepareStatement(selectQueryInvoice);
             selectFood = connection.prepareStatement(selectQueryFood);
-            setSelectBills();
+            setSelectInvoices();
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
     }
 
-    public static HashMap<LocalDate, List<Bill>> getBillsByDate() {
-        return billsByDate;
+    public static int getMinYear() {
+        int minYear = Integer.MAX_VALUE;
+        for (LocalDate date : invoicesByDate.keySet()) {
+            if (date.getYear() < minYear) {
+                minYear = date.getYear();
+            }
+        }
+        return minYear;
     }
 
-    public static HashMap<String, Bill> getBillList() {
-        return billList;
+    public static HashMap<LocalDate, List<Invoice>> getInvoicesByDate() {
+        return invoicesByDate;
     }
 
-    public static void setAddBill(Bill bill) {
+    public static HashMap<String, Invoice> getInvoiceList() {
+        return invoiceList;
+    }
+
+    public static void setAddinvoice(Invoice invoice) {
         try {
 
-            LocalDate billDate = bill.getDateBill().toLocalDate();
-            billsByDate.putIfAbsent(billDate, new ArrayList<>());
-            billsByDate.get(billDate).add(bill);
-            billList.put(bill.getIdBill(), bill);
+            LocalDate invoiceDate = invoice.getDateInvoice().toLocalDate();
+            invoicesByDate.putIfAbsent(invoiceDate, new ArrayList<>());
+            invoicesByDate.get(invoiceDate).add(invoice);
+            invoiceList.put(invoice.getIdInvoice(), invoice);
 
 
-            insertBill.setString(1, bill.getIdBill());
-            insertBill.setTimestamp(2, Timestamp.valueOf(bill.getDateBill()));
-            insertBill.setLong(3, bill.getValueBill());
-            insertBill.executeUpdate();
-            for (String id : bill.getFoodList().keySet()) {
-                int[] totalFood = bill.getFoodList().get(id);
+            insertInvoice.setString(1, invoice.getIdInvoice());
+            insertInvoice.setTimestamp(2, Timestamp.valueOf(invoice.getDateInvoice()));
+            insertInvoice.setLong(3, invoice.getValueInvoice());
+            insertInvoice.executeUpdate();
+            for (String id : invoice.getFoodList().keySet()) {
+                int[] totalFood = invoice.getFoodList().get(id);
                 if (totalFood[0] != 0) {
-                    insertFood.setString(1, bill.getIdBill());
+                    insertFood.setString(1, invoice.getIdInvoice());
                     insertFood.setString(2, id);
                     insertFood.setString(3, "M");
                     insertFood.setLong(4, totalFood[0]);
                     insertFood.executeUpdate();
                 }
                 if (totalFood[1] != 0) {
-                    insertFood.setString(1, bill.getIdBill());
+                    insertFood.setString(1, invoice.getIdInvoice());
                     insertFood.setString(2, id);
                     insertFood.setString(3, "L");
                     insertFood.setLong(4, totalFood[1]);
@@ -78,30 +88,30 @@ public class RevenueStatistics {
         }
     }
 
-    public static void setRemoveBill(Bill bill) {
-        List<Bill> bills = billsByDate.get(bill.getDateBill().toLocalDate());
+    public static void setRemoveinvoice(Invoice invoice) {
+        List<Invoice> invoices = invoicesByDate.get(invoice.getDateInvoice().toLocalDate());
 
-        if (bills != null) {
-            bills.remove(bill);
-            if (bills.isEmpty()) {
-                billsByDate.remove(bill.getDateBill().toLocalDate());
+        if (invoices != null) {
+            invoices.remove(invoice);
+            if (invoices.isEmpty()) {
+                invoicesByDate.remove(invoice.getDateInvoice().toLocalDate());
             }
             try {
-                deleteBill.setString(1, bill.getIdBill());
-                deleteFood.setString(1, bill.getIdBill());
-                deleteBill.executeUpdate();
+                deleteInvoice.setString(1, invoice.getIdInvoice());
+                deleteFood.setString(1, invoice.getIdInvoice());
+                deleteInvoice.executeUpdate();
                 deleteFood.executeUpdate();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
 
         }
-        billList.remove(bill.getIdBill());
+        invoiceList.remove(invoice.getIdInvoice());
 
     }
 
-    private static void setSelectBills() {
-        try (ResultSet resultSet = selectBill.executeQuery()) {
+    private static void setSelectInvoices() {
+        try (ResultSet resultSet = selectInvoice.executeQuery()) {
             while (resultSet.next()) {
                 String id = resultSet.getString("id");
                 LocalDateTime localDateTime = resultSet.getTimestamp("time").toLocalDateTime();
@@ -111,25 +121,24 @@ public class RevenueStatistics {
                 selectFood.setString(1, id);
                 ResultSet resultSet1 = selectFood.executeQuery();
                 HashMap<String, int[]> totals = new HashMap<>();
-                int[] item = new int[2];
-                item[0] = 0;
-                item[1] = 0;
+
                 while (resultSet1.next()) {
                     String idFood = resultSet1.getString("id_food");
                     String size = resultSet1.getString("size");
                     int total = resultSet1.getInt("total");
-                    if (size.equals("S")) {
+                    totals.putIfAbsent(idFood, new int[]{0, 0});
+                    int[] item = totals.get(idFood);
+                    if (size.equals("M")) {
                         item[0] = total;
-
-                    } else {
+                    } else if (size.equals("L")) {
                         item[1] = total;
                     }
                 }
-                totals.put(id, item);
-                Bill bill = new Bill(totals, id, localDateTime, value);
-                billsByDate.putIfAbsent(localDateTime.toLocalDate(), new ArrayList<>());
-                billsByDate.get(localDateTime.toLocalDate()).add(bill);
-                billList.put(id,bill);
+
+                Invoice invoice = new Invoice(totals, id, localDateTime, value);
+                invoicesByDate.putIfAbsent(localDateTime.toLocalDate(), new ArrayList<>());
+                invoicesByDate.get(localDateTime.toLocalDate()).add(invoice);
+                invoiceList.put(id, invoice);
 
             }
         } catch (SQLException e) {

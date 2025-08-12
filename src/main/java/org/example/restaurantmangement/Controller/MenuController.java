@@ -1,12 +1,16 @@
 package org.example.restaurantmangement.Controller;
 
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
@@ -15,19 +19,23 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.Border;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 
 
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import org.example.restaurantmangement.Model.Food;
+import org.example.restaurantmangement.Model.*;
 import org.example.restaurantmangement.Model.Menu;
 
 
+import javax.swing.plaf.basic.BasicBorders;
 import java.io.File;
 import java.net.URL;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 
@@ -44,11 +52,23 @@ public class MenuController implements Initializable {
     @FXML
     private TableColumn<Food, String> colType;
     @FXML
+    private TableColumn<Invoice, String> colDetailInvoice;
+    @FXML
+    private TableColumn<Invoice, String> colIdInvoice;
+    @FXML
+    private TableColumn<Invoice, String> colTimeInvoice;
+    @FXML
+    private TableColumn<Invoice, String> colValueInvoice;
+    @FXML
+    private DatePicker enterDate;
+    @FXML
     private Button buttonFoods;
     @FXML
     private Button buttonRevenue;
     @FXML
     private Button buttonSetting;
+    @FXML
+    private Button buttonPrint;
     @FXML
     private TextField enterSearchFood;
     @FXML
@@ -60,21 +80,23 @@ public class MenuController implements Initializable {
     @FXML
     private Button buttonEditFood;
     @FXML
-    private HBox lineFoodsTool;
+    private ToggleButton buttonChooseModel;
     @FXML
-    private HBox lineDetailTool;
+    private HBox lineFoodsTool;
     @FXML
     private Button buttonRemoveFood;
     @FXML
-    private Button buttonDeleteFood;
-    @FXML
-    private Button buttonUpdateFood;
-    @FXML
     private Button buttonChooseImage;
+    @FXML
+    private Button buttonCancel;
     @FXML
     private ImageView logoRestaurant;
     @FXML
     private TableView<Food> tableFoods;
+    @FXML
+    private TableView<Invoice> tableInvoices;
+    @FXML
+    private AnchorPane anchorStatistic;
     @FXML
     private AnchorPane anchorFoods;
     @FXML
@@ -86,7 +108,15 @@ public class MenuController implements Initializable {
     @FXML
     private AnchorPane anchorListView;
     @FXML
+    private AnchorPane anchorDetailInvoice;
+    @FXML
+    private AnchorPane anchorPrint;
+    @FXML
+    private AnchorPane anchorEditFood;
+    @FXML
     private ImageView imageFood;
+    @FXML
+    private ImageView imageFoodEdit;
     @FXML
     private TextField enterIdFood;
     @FXML
@@ -100,7 +130,11 @@ public class MenuController implements Initializable {
     @FXML
     private ListView<String> resultsSearch;
     @FXML
+    private Label showRevenueTotal;
+    @FXML
     private Label showIdFood;
+    @FXML
+    private Label showIdFoodEdit;
     @FXML
     private Label showNameFood;
     @FXML
@@ -109,32 +143,133 @@ public class MenuController implements Initializable {
     private Label showPriceM;
     @FXML
     private Label showTypeFood;
+    @FXML
+    private Label showIdInvoice;
+    @FXML
+    private Label showTimeInvoice;
+    @FXML
+    private Label showValueInvoice;
+    @FXML
+    private TableColumn<String[], String> colShowAmount;
+    @FXML
+    private TableColumn<String[], String> colShowId;
+    @FXML
+    private TableColumn<String[], String> colShowName;
+    @FXML
+    private TableColumn<String[], String> colShowTotal;
+    @FXML
+    private TableColumn<String[], String> colShowSize;
+    @FXML
+    private TableView<String[]> tableDetailInvoice;
+    @FXML
+    private ComboBox<String> buttonChooseMonth;
+    @FXML
+    private ComboBox<String> buttonChooseYear;
+    @FXML
+    private TableColumn<String[], String> colNameRevenue;
+    @FXML
+    private TableColumn<String[], String> colPercentRevenue;
+    @FXML
+    private TableColumn<String[], String> colAmountRevenue;
+    @FXML
+    private TableColumn<String[], String> colIdRevenue;
+    @FXML
+    private TableView<String[]> tableRevenue;
 
-
+    private static final Map<Node, List<Node>> map = new HashMap<>();
+    private ObservableList<String[]> revenueList;
     private ObservableList<Food> foodList;
+    private ObservableList<Invoice> invoiceList;
+    private ObservableList<String[]> infoInvoice;
     private List<Pane> paneList;
     private Food selectedFood;
     private File selectedFile;
+    private Invoice selectedInvoice;
     private Alert alert;
-    private boolean isEditing;
     private HashMap<TextField, String> findSizeFood;
+    private Stack<Pane> paneStack = new Stack<>();
 
     private void setVisiblePane(Pane pane) {
+        paneStack.push(pane);
+        buttonCancel.setVisible(paneStack.size() >= 2);
         for (Pane pane_ : paneList) {
             if (pane_ == pane) {
                 pane_.setVisible(true);
                 continue;
             }
             pane_.setVisible(false);
-            enterSearchFood.setVisible(false);
-            butonSearch.setVisible(false);
-            setAcceptEdit(false);
-            buttonAddFood.setVisible(false);
-            lineFoodsTool.setVisible(false);
-            lineDetailTool.setVisible(false);
             setStyleItem("transparent");
             setFoodsList(null);
         }
+    }
+
+    private void register(Node extraNode, Node... mainPanes) {
+        BooleanBinding binding = Bindings.createBooleanBinding(() -> {
+            for (Node pane : mainPanes) {
+                if (pane.isVisible()) return true;
+            }
+            return false;
+        }, Arrays.stream(mainPanes)
+                .map(Node::visibleProperty)
+                .toArray(BooleanProperty[]::new));
+
+        extraNode.visibleProperty().bind(binding);
+    }
+
+    private void setShowNode() {
+        register(enterSearchFood, anchorFoods);
+        register(butonSearch, anchorFoods);
+        register(buttonAddFood, anchorFoods);
+        register(lineFoodsTool, anchorDetailFood);
+        register(anchorPrint, anchorRevenue, anchorDetailInvoice, anchorStatistic);
+        register(buttonChooseModel,anchorRevenue,anchorStatistic);
+
+    }
+
+    private void setTableRevenue() {
+        colIdRevenue.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue()[0]));
+        colIdRevenue.setStyle("-fx-alignment: CENTER;");
+        colNameRevenue.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue()[1]));
+        colNameRevenue.setStyle("-fx-alignment: CENTER;");
+        colAmountRevenue.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue()[2]));
+        colAmountRevenue.setStyle("-fx-alignment: CENTER;");
+        colPercentRevenue.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue()[3]));
+        colPercentRevenue.setStyle("-fx-alignment: CENTER;");
+        tableRevenue.setFixedCellSize(-1);
+    }
+
+    private void setTableDetailInvoice() {
+        colShowId.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue()[0]));
+        colShowId.setStyle("-fx-alignment: CENTER;");
+        colShowName.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue()[1]));
+        colShowName.setStyle("-fx-alignment: CENTER;");
+        colShowSize.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue()[2]));
+        colShowSize.setStyle("-fx-alignment: CENTER;");
+        colShowAmount.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue()[3]));
+        colShowAmount.setStyle("-fx-alignment: CENTER;");
+        colShowTotal.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue()[4]));
+        colShowTotal.setStyle("-fx-alignment: CENTER;");
+
+    }
+
+    private void setTableInvoices() {
+        colIdInvoice.setCellValueFactory(cellData ->
+                new SimpleStringProperty(cellData.getValue().getIdInvoice()));
+        colIdInvoice.setStyle("-fx-alignment: CENTER;");
+        colTimeInvoice.setCellValueFactory(cellData -> {
+            LocalDateTime time = cellData.getValue().getDateInvoice();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+            return new SimpleStringProperty(formatter.format(time));
+        });
+        colTimeInvoice.setStyle("-fx-alignment: CENTER;");
+        colValueInvoice.setCellValueFactory(cellData ->
+                new SimpleStringProperty(String.valueOf(cellData.getValue().getValueInvoice())));
+        colValueInvoice.setStyle("-fx-alignment: CENTER;");
+        colDetailInvoice.setCellValueFactory(cellData -> {
+            return new SimpleStringProperty("»");
+        });
+        colDetailInvoice.setStyle("-fx-alignment: CENTER;");
+        tableInvoices.setFixedCellSize(-1);
     }
 
     private void setTableFoods() {
@@ -213,18 +348,26 @@ public class MenuController implements Initializable {
 
     }
 
+    private void processSelectedInvoice() {
+        showIdInvoice.setText("ID: " + selectedInvoice.getIdInvoice());
+        showTimeInvoice.setText("DateTime: " + selectedInvoice.getDateInvoice().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+        showValueInvoice.setText("Value: " + selectedInvoice.getValueInvoice() + " VNĐ");
+        setInfoInvoice();
+    }
+
     private void processSelectedFood() {
-        showIdFood.setText(selectedFood.getId());
-        showNameFood.setText(selectedFood.getName());
+        showIdFood.setText("  " + selectedFood.getId());
+        showIdFoodEdit.setText("  " + selectedFood.getId());
+        showNameFood.setText("  " + selectedFood.getName());
         enterNameFood.setText(selectedFood.getName());
-        showTypeFood.setText(selectedFood.getType());
+        showTypeFood.setText("  " + selectedFood.getType());
         enterTypeFood.setText(selectedFood.getType());
         imageFood.setImage(selectedFood.displayImage());
-        showPriceM.setText(selectedFood.getPrice("M") + "");
+        imageFoodEdit.setImage(selectedFood.displayImage());
+        showPriceM.setText("  " + selectedFood.getPrice("M") + "");
         enterPriceM.setText(selectedFood.getPrice("M") + "");
-        showPriceL.setText(selectedFood.getPrice("L") + "");
+        showPriceL.setText("  " + selectedFood.getPrice("L") + "");
         enterPriceL.setText(selectedFood.getPrice("L") + "");
-
     }
 
 
@@ -243,21 +386,6 @@ public class MenuController implements Initializable {
         alert.setContentText(null);
         Optional<ButtonType> result = alert.showAndWait();
         return result.isPresent() && result.get() == ButtonType.OK;
-    }
-
-    private void setAcceptEdit(boolean content) {
-        enterNameFood.setVisible(content);
-        enterTypeFood.setVisible(content);
-        enterPriceL.setVisible(content);
-        enterPriceM.setVisible(content);
-        buttonChooseImage.setVisible(content);
-        showNameFood.setVisible(!content);
-        showTypeFood.setVisible(!content);
-        showPriceM.setVisible(!content);
-        showPriceL.setVisible(!content);
-        isEditing = content;
-        lineDetailTool.setVisible(content);
-        lineFoodsTool.setVisible(!content);
     }
 
     private boolean processSaveFood() {
@@ -314,6 +442,7 @@ public class MenuController implements Initializable {
             enterPriceL.setStyle("-fx-border-color: red");
         }
         if (!name.isBlank() && !type.isBlank() && !priceM.isBlank() && !priceL.isBlank()) {
+            System.out.println("hello");
             Menu.setInsert(id, name, type, prices, selectedFile);
             tableFoods.refresh();
             setFoodsList(null);
@@ -323,7 +452,8 @@ public class MenuController implements Initializable {
         return result;
     }
 
-    private void processUpdateFood() {
+    private boolean processUpdateFood() {
+        boolean res = true;
         String id = showIdFood.getText();
         String name = enterNameFood.getText();
         String type = enterTypeFood.getText();
@@ -368,21 +498,77 @@ public class MenuController implements Initializable {
         } catch (NumberFormatException e) {
             enterPriceL.setStyle("-fx-border-color: red");
         }
-        if (!name.isBlank() && !type.isBlank() && !priceM.isBlank() && !priceL.isBlank()) {
-            setAcceptEdit(false);
+        if (name.isBlank() && type.isBlank() && priceM.isBlank() && priceL.isBlank()) {
+            res = false;
         }
         processSelectedFood();
         tableFoods.refresh();
         setFoodsList(null);
+        return res;
     }
 
     private void setStyleItem(String style) {
-        enterNameFood.setStyle("-fx-border-color: " + style);
-        enterTypeFood.setStyle("-fx-border-color: " + style);
-        enterPriceM.setStyle("-fx-border-color: " + style);
-        enterPriceL.setStyle("-fx-border-color: " + style);
+        if (!style.isBlank()) {
+            enterNameFood.setStyle("-fx-border-color: " + style);
+            enterTypeFood.setStyle("-fx-border-color: " + style);
+            enterPriceM.setStyle("-fx-border-color: " + style);
+            enterPriceL.setStyle("-fx-border-color: " + style);
+        }
     }
 
+    private void setInfoInvoice() {
+        infoInvoice = FXCollections.observableArrayList();
+        for (Map.Entry<String, int[]> entry : selectedInvoice.getFoodList().entrySet()) {
+            String id = entry.getKey();
+            int[] prices = entry.getValue();
+            Food food = Menu.getFoods().get(id);
+            if (prices[0] != 0) {
+                infoInvoice.add(new String[]{id, food.getName(), "M", String.valueOf(prices[0]),
+                        String.valueOf(prices[0] * food.getPrice("M"))});
+
+            }
+            if (prices[1] != 0) {
+                infoInvoice.add(new String[]{id, food.getName(), "L", String.valueOf(prices[1]),
+                        String.valueOf(prices[1] * food.getPrice("L"))});
+            }
+        }
+
+        tableDetailInvoice.setItems(infoInvoice);
+    }
+
+    private void setRevenueList(String yearMonth) {
+        YearMonth pattern = YearMonth.parse(yearMonth);
+        HashMap<String, int[]> item = new HashMap<>();
+        long totalRevenue = 0;
+        for (LocalDate localDate : RevenueStatistics.getInvoicesByDate().keySet()) {
+            if (YearMonth.from(localDate).equals(pattern)) {
+                List<Invoice> list = RevenueStatistics.getInvoicesByDate().get(localDate);
+                for (Invoice invoice : list) {
+                    totalRevenue += invoice.getValueInvoice();
+                    for (String id : invoice.getFoodList().keySet()) {
+                        item.putIfAbsent(id, new int[2]);
+                        int[] arr = item.get(id);
+                        int[] amount = invoice.getFoodList().get(id);
+                        Food food = Menu.getFoods().get(id);
+                        arr[0] += amount[0] + amount[1];
+                        arr[1] += (int) (amount[0] * food.getPrice("M") + amount[1] * food.getPrice("L"));
+                    }
+                }
+            }
+
+        }
+
+        revenueList = FXCollections.observableArrayList();
+        for (Map.Entry<String, int[]> entry : item.entrySet()) {
+            String id = entry.getKey();
+            int[] amount = entry.getValue();
+            Food food = Menu.getFoods().get(id);
+            revenueList.add(new String[]{id, food.getName(), String.valueOf(amount[0]),
+                    String.format("%.2f%%", (double) amount[1] * 100 / totalRevenue)});
+        }
+        showRevenueTotal.setText("Revenue Total: " + totalRevenue + " VND");
+        tableRevenue.setItems(revenueList);
+    }
 
     private void setFoodsList(ObservableList<Food> foodList_) {
         if (foodList_ == null) {
@@ -393,11 +579,31 @@ public class MenuController implements Initializable {
         tableFoods.setItems(foodList);
     }
 
-    private void setVisibleId(boolean content) {
-        showIdFood.setVisible(content);
-        enterIdFood.setVisible(!content);
-        buttonSave.setVisible(!content);
+    private void setInvoicesList(LocalDate date) {
+        if (date == null) {
+            invoiceList = FXCollections.observableArrayList(RevenueStatistics.getInvoiceList().values());
+        } else {
+            List<Invoice> Invoices = RevenueStatistics.getInvoicesByDate().get(date);
+            if (Invoices != null) {
+                invoiceList = FXCollections.observableArrayList(Invoices);
+            } else {
+                invoiceList = FXCollections.observableArrayList();
+            }
+        }
+        tableInvoices.setItems(invoiceList);
     }
+
+    private void setVisibleID(boolean content) {
+        enterIdFood.setVisible(content);
+        showIdFood.setVisible(!content);
+    }
+
+    public void setMonthAndYear() {
+        buttonChooseYear.setValue(LocalDate.now().getYear() + "");
+        buttonChooseMonth.setValue(LocalDate.now().getMonthValue() + "");
+        setRevenueList(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM")));
+    }
+
 
     private void processChooseImage() {
         FileChooser fileChooser = new FileChooser();
@@ -423,8 +629,14 @@ public class MenuController implements Initializable {
     void actionSaveInfo(MouseEvent event) {
         if (event.getSource() == buttonSave) {
             if (showConfirm("Are you sure you want to save?")) {
-                if (processSaveFood()) {
-                    setVisiblePane(anchorFoods);
+                if (enterIdFood.isVisible()) {
+                    if (processSaveFood()) {
+                        setVisiblePane(anchorFoods);
+                    }
+                } else {
+                    if (processUpdateFood()) {
+                        setVisiblePane(anchorFoods);
+                    }
                 }
             }
         }
@@ -434,14 +646,18 @@ public class MenuController implements Initializable {
     void actionAnchor(ActionEvent event) {
         if (event.getSource() == buttonFoods) {
             setVisiblePane(anchorFoods);
-            enterSearchFood.setVisible(true);
-            butonSearch.setVisible(true);
-            buttonAddFood.setVisible(true);
-
         } else if (event.getSource() == buttonRevenue) {
             setVisiblePane(anchorRevenue);
         } else if (event.getSource() == buttonSetting) {
             setVisiblePane(anchorSetting);
+        } else if (event.getSource() == buttonPrint) {
+            if (anchorRevenue.isVisible()) {
+                PDFExporter.exportPaneToPDF(anchorRevenue);
+            } else if (anchorDetailInvoice.isVisible()) {
+                PDFExporter.exportPaneToPDF(anchorDetailInvoice);
+            }else if(anchorStatistic.isVisible()){
+                PDFExporter.exportPaneToPDF(anchorStatistic);
+            }
         }
     }
 
@@ -453,40 +669,28 @@ public class MenuController implements Initializable {
                 setVisiblePane(anchorFoods);
                 enterSearchFood.setVisible(true);
                 butonSearch.setVisible(true);
-
             }
         } else if (event.getSource() == buttonEditFood) {
-            setVisiblePane(anchorDetailFood);
-            lineDetailTool.setVisible(true);
-            setAcceptEdit(true);
-            setVisibleId(true);
-
+            setVisiblePane(anchorEditFood);
+            setVisibleID(false);
 
         } else if (event.getSource() == buttonAddFood) {
+            setVisibleID(true);
             enterIdFood.clear();
             enterNameFood.clear();
             enterTypeFood.clear();
             enterPriceM.clear();
             enterPriceL.clear();
-            imageFood.setImage(null);
-            setVisiblePane(anchorDetailFood);
-            setAcceptEdit(true);
-            buttonChooseImage.setVisible(true);
-            setVisibleId(false);
-            lineDetailTool.setVisible(false);
-        } else if (event.getSource() == buttonDeleteFood) {
-            if (showConfirm("Are you sure you want to delete this item?")) {
-                Menu.setDelete(selectedFood.getId());
-                setVisiblePane(anchorFoods);
-                enterSearchFood.setVisible(true);
-                butonSearch.setVisible(true);
+            imageFoodEdit.setImage(null);
+            setVisiblePane(anchorEditFood);
 
-            }
-        } else if (event.getSource() == buttonUpdateFood) {
-            if (showConfirm("Are you sure you want to update this item")) {
-                processUpdateFood();
-            }
         }
+    }
+
+    @FXML
+    void handleDateSelected(ActionEvent event) {
+        LocalDate selectedDate = enterDate.getValue();
+        setInvoicesList(selectedDate);
     }
 
     @FXML
@@ -504,16 +708,36 @@ public class MenuController implements Initializable {
         }
     }
 
+    @FXML
+    void actionCancel(MouseEvent event) {
+        if (event.getSource() == buttonCancel) {
+            if (paneStack.size() >= 2) {
+                paneStack.pop();
+                setVisiblePane(paneStack.pop());
+                buttonCancel.setVisible(paneStack.size() >= 2);
+            }
+        }
+    }
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        isEditing = false;
         setFoodsList(null);
+        setInvoicesList(null);
+        setShowNode();
         findSizeFood = new HashMap<>();
         findSizeFood.put(enterPriceM, "M");
         findSizeFood.put(enterPriceL, "L");
+        paneStack.push(anchorFoods);
         tableFoods.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        paneList = Arrays.asList(anchorFoods, anchorRevenue, anchorSetting, anchorDetailFood, anchorListView);
+        tableInvoices.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        tableRevenue.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        paneList = Arrays.asList(anchorFoods, anchorRevenue, anchorSetting,
+                anchorDetailFood, anchorListView, anchorDetailInvoice,
+                anchorStatistic, anchorEditFood);
         setTableFoods();
+        setTableInvoices();
+        setTableDetailInvoice();
+        setTableRevenue();
         tableFoods.setItems(foodList);
         tableFoods.setRowFactory(tv -> {
             TableRow<Food> row = new TableRow<>();
@@ -521,11 +745,9 @@ public class MenuController implements Initializable {
                 if (!row.isEmpty() && event.getClickCount() == 2) {
                     selectedFood = row.getItem();
                     setVisiblePane(anchorDetailFood);
-                    lineFoodsTool.setVisible(true);
+                    setVisibleID(false);
                     processSelectedFood();
-                    setVisibleId(true);
                 } else if (!row.isEmpty() && event.getClickCount() == 1) {
-                    lineFoodsTool.setVisible(true);
                     selectedFood = row.getItem();
                     processSelectedFood();
                 }
@@ -533,13 +755,55 @@ public class MenuController implements Initializable {
 
             return row;
         });
+        tableRevenue.setRowFactory(tv -> {
+            TableRow<String[]> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (!row.isEmpty() && event.getClickCount() == 2) {
+                    selectedFood = Menu.getFoods().get(row.getItem()[0]);
+                    setVisiblePane(anchorDetailFood);
+                    processSelectedFood();
 
-        imageFood.setOnMouseClicked(event -> {
-            if (isEditing) {
-                processChooseImage();
-                if (selectedFile != null) {
-                    imageFood.setImage(new Image(selectedFile.toURI().toString()));
+                } else if (!row.isEmpty() && event.getClickCount() == 1) {
+
+                    selectedFood = Menu.getFoods().get(row.getItem()[0]);
+                    processSelectedFood();
                 }
+            });
+
+            return row;
+        });
+        tableDetailInvoice.setRowFactory(tv -> {
+            TableRow<String[]> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (!row.isEmpty() && event.getClickCount() == 2) {
+                    selectedFood = Menu.getFoods().get(row.getItem()[0]);
+                    setVisiblePane(anchorDetailFood);
+
+                    processSelectedFood();
+                } else if (!row.isEmpty() && event.getClickCount() == 1) {
+
+                    selectedFood = Menu.getFoods().get(row.getItem()[0]);
+                    processSelectedFood();
+                }
+            });
+
+            return row;
+        });
+        tableInvoices.setRowFactory(tv -> {
+            TableRow<Invoice> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (!row.isEmpty() && event.getClickCount() == 2) {
+                    selectedInvoice = row.getItem();
+                    setVisiblePane(anchorDetailInvoice);
+                    processSelectedInvoice();
+                }
+            });
+            return row;
+        });
+        imageFoodEdit.setOnMouseClicked(event -> {
+            processChooseImage();
+            if (selectedFile != null) {
+                imageFoodEdit.setImage(new Image(selectedFile.toURI().toString()));
             }
         });
 
@@ -567,10 +831,42 @@ public class MenuController implements Initializable {
             if (selectedItem != null) {
                 selectedFood = Menu.getFoods().get(splitStr[0]);
                 setVisiblePane(anchorDetailFood);
-                setVisibleId(true);
-                lineFoodsTool.setVisible(true);
                 processSelectedFood();
             }
         });
+        buttonChooseModel.selectedProperty().addListener((obs, wasSelected, isSelected) -> {
+            buttonChooseModel.setText(isSelected ? "Food Statistic" : "Invoice List");
+            if (buttonChooseModel.isVisible()) {
+                if (!isSelected) {
+                    setVisiblePane(anchorRevenue);
+
+                } else {
+                    setVisiblePane(anchorStatistic);
+                }
+
+            }
+        });
+        for (int i = 1; i <= 12; i++) {
+            String str;
+
+            if (i < 10) {
+                str = "0" + i;
+            } else {
+                str = i + "";
+            }
+            buttonChooseMonth.getItems().add(str);
+        }
+        for (int y = LocalDate.now().getYear(); y >= RevenueStatistics.getMinYear(); y--) {
+            buttonChooseYear.getItems().add(String.valueOf(y));
+        }
+        setMonthAndYear();
+
+        buttonChooseMonth.valueProperty().addListener((obs, oldVal, newVal) -> {
+            setRevenueList(buttonChooseYear.getValue() + "-" + newVal);
+        });
+        buttonChooseYear.valueProperty().addListener((obs, oldVal, newVal) -> {
+            setRevenueList(newVal + "-" + buttonChooseMonth.getValue());
+        });
+
     }
 }
